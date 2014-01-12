@@ -1,0 +1,36 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{C8FED2B1-5347-42F1-80CE-8E227985DA92}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="Packages\CodeZillaDLL_XE2.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="CodeZillaDLL_XE2">
+        <MSBuild Projects="Packages\CodeZillaDLL_XE2.dproj"/>
+    </Target>
+    <Target Name="CodeZillaDLL_XE2:Clean">
+        <MSBuild Projects="Packages\CodeZillaDLL_XE2.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="CodeZillaDLL_XE2:Make">
+        <MSBuild Projects="Packages\CodeZillaDLL_XE2.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="CodeZillaDLL_XE2"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="CodeZillaDLL_XE2:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="CodeZillaDLL_XE2:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>
