@@ -1,4 +1,4 @@
-object KoFormDictionaryEdit: TKoFormDictionaryEdit
+object CzFormDictionaryEdit: TCzFormDictionaryEdit
   Left = 0
   Top = 0
   Caption = #1044#1086#1087#1086#1083#1085#1080#1090#1077#1083#1100#1085#1099#1077' '#1089#1083#1086#1074#1072

@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, uKoSpellChecker, ComCtrls, ExtCtrls, Menus;
+  Dialogs, StdCtrls, uCzSpellChecker, ComCtrls, ExtCtrls, Menus;
 
 type
   TFormMain = class(TForm)
@@ -44,12 +44,12 @@ implementation
 {$R *.dfm}
 
 uses
-  uKoFormDictionaryEdit, uKoGeneral;
+  uCzFormDictionaryEdit, uKoGeneral;
 
 
 procedure TFormMain.bDictClick(Sender: TObject);
 begin
-  TKoFormDictionaryEdit.CreateAndShowModal;
+  TCzFormDictionaryEdit.CreateAndShowModal;
 end;
 
 procedure TFormMain.bSpellCheckClick(Sender: TObject);

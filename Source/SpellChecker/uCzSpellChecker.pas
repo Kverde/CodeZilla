@@ -1,22 +1,19 @@
-unit uKoSpellChecker;
+unit uCzSpellChecker;
 
 interface
 uses
   Classes,
-   CCR.Hunspell_Cz,
-     SysUtils,
-       Forms,
-        Generics.Collections,
-         Types,
-          uKoSingleton,
-           uKoOptions;
+  CCR.Hunspell_Cz,
+  SysUtils,
+  Generics.Collections,
+  Types,
+  uCzSettings;
 
 const
-  cDictPath = 'Dict\';
+  cDictFolder = 'Dict\';
 
-  cNewWordFileName = 'NewWord.txt';
-  cDictListFileName = 'DictionariesList.txt';
-  cOptionsFileName = 'SpellCheckerOptions.ini';
+  cCustomWordsFileName = 'CustomWords.txt';
+  cSettingsFileName = 'SpellCheckerSettings.ini';
 
   cHunspellDLLFileName = 'hunspell.dll';
 
@@ -39,55 +36,31 @@ type
 
   TMisspellList = TObjectList<TMisspell>;
 
-  THunspellsList = TObjectList<THunspell>;
-
-  TSpellChecker = class;
-
-  TDictionaries = class
-  strict private
-    FHunspellsList: THunspellsList;
-    FSpellChecker: TSpellChecker;
-
-    procedure AddCustomWords(AHunspell: THunspell);
-
-  public
-    constructor Create(ASpellChecker: TSpellChecker);
-    destructor Destroy; override;
-
-    procedure LoadFromFile;
-    procedure SaveToFile;
-
-    function Add(const ADictFileName: string): Boolean;
-    procedure Delete(const ADictFileName: string);
-
-    property HunspellsList: THunspellsList read FHunspellsList;
-  end;
-
-  TSpellCheckerOptions = class(TFormedOptions)
+  TSpellCheckerSettings = class(TCzSettings)
   strict private
     FDigitAsLetter: Boolean;
     FSymbolAsLetter: string;
   public
 
-    [TIni('Options', 'DigitAsLetter', 'True')]
-    [TOptions(okCheckBox, 'Определять цифры как буквы')]
+    [TCzIni('True')]
     property DigitAsLetter: Boolean read FDigitAsLetter write FDigitAsLetter;
 
-    [TIni('Options', 'SymbolAsLetter', '-._/')]
-    [TOptions(okLabeledEdit, 'Символы определяемые как буквы')]
+    [TCzIni('-._/')]
     property SymbolAsLetter: string read FSymbolAsLetter write FSymbolAsLetter;
   end;
 
-  TSpellChecker = class(TTypedSingleton<TSpellChecker>)
+  TSpellChecker = class(TObject)
   strict private
-    FDictionaries: TDictionaries;
+    FDictPath, FSettingsPath: string;
+
+    FHunspell: THunspell;
 
     FCustomWordList: TStringList;
     FMisspellList: TMisspellList;
 
     FStartWord, FLengthWord: Integer;
 
-    FOptions: TSpellCheckerOptions;
+    FSettings: TSpellCheckerSettings;
 
     procedure LoadCustomWords;
     procedure SaveCustomWords;
@@ -97,10 +70,10 @@ type
 
     procedure CheckWord(const AWord: string);
 
-  strict protected
-    procedure CreateSingleton; override;
-    procedure DestroySingleton; override;
   public
+    constructor Create(const AExpertPath, ASettingsPath: string);
+    destructor Destroy; override;
+
 
     function AddCustomWord(const ACustomWord: string): Boolean;
     procedure DeleteCustomWord(const ACustomWord: string);
@@ -113,8 +86,6 @@ type
     function FindWordInCustomWordList(const AStr: string): Boolean;
 
     property MisspellList: TMisspellList read FMisspellList;
-    property Dictionaries: TDictionaries read FDictionaries;
-    property Options: TSpellCheckerOptions read FOptions;
   end;
 
 
@@ -178,7 +149,7 @@ begin
   end;
 end;
 
-procedure TSpellChecker.DestroySingleton;
+destructor TSpellChecker.Destroy;
 begin
   FreeAndNil(FDictionaries);
 
@@ -190,7 +161,6 @@ begin
   inherited;
 end;
 
-
 procedure TSpellChecker.GetCustomWordsList(AStringList: TStrings);
 begin
   Assert(Assigned(AStringList), 'TSpellChecker.GetCustomWordsList: AStringList = nil');
@@ -198,23 +168,39 @@ begin
   AStringList.Assign(FCustomWordList);
 end;
 
-procedure TSpellChecker.CreateSingleton;
-var
-  DictPath: string;
+constructor TSpellChecker.Create(const AExpertPath, ASettingsPath: string);
 begin
   inherited;
 
-  DictPath := gnrProgramDataPath + cDictPath;
+  FDictPath := AExpertPath + cDictFolder;
+  FSettingsPath := ASettingsPath;
+
+  FSettings := TSpellCheckerSettings.Create(FSettingsPath + cSettingsFileName);
+
+
+
+
 
   FCustomWordList := TStringList.Create;
+
+
+
+
   FMisspellList :=  TMisspellList.Create(True);
 
   LoadCustomWords;
 
-  FDictionaries := TDictionaries.Create(Self);
-  FDictionaries.LoadFromFile;
 
-  FOptions := TSpellCheckerOptions.Create(gnrProgramUserDataPath + cOptionsFileName);
+
+      if not FileExists(FuulDictFileName) then
+        Continue;
+
+      Hunspell := THunspell.Create;
+      Hunspell.TryLoadLibrary(gnrProgramDataPath + cHunspellDLLFileName);
+      Hunspell.LoadDictionary(FuulDictFileName, ChangeFileExt(FuulDictFileName, '.aff'));
+
+      AddCustomWords(Hunspell);
+      FHunspellsList.Add(Hunspell);
 end;
 
 procedure TSpellChecker.LoadCustomWords;
@@ -316,124 +302,25 @@ begin
   inherited;
 end;
 
-{ TDictionaries }
+//procedure TDictionaries.AddCustomWords(AHunspell: THunspell);
+//var
+//  CustomWord: string;
+//  CustomWords: TStringList;
+//
+//begin
+//  Assert(Assigned(AHunspell), 'TDictionaries.AddCustomWords: AHunspell = nil');
+//
+//  //TODO оптимизивроавть
+//
+//  CustomWords := TStringList.Create;
+//  try
+//    FSpellChecker.GetCustomWordsList(CustomWords);
+//    for CustomWord in CustomWords do
+//      AHunspell.AddCustomWord(CustomWord);
+//  finally
+//    FreeAndNil(CustomWords);
+//  end;
+//end;
 
-function TDictionaries.Add(const ADictFileName: string): Boolean;
-var
-  Hunspell: THunspell;
-  FullFileName: string;
-
-begin
-  for Hunspell in FHunspellsList do
-    if AnsiSameText(ExtractFileName(Hunspell.DictionaryFileName), ADictFileName) then
-      Exit(False);
-
-  Hunspell := THunspell.Create;
-  Hunspell.TryLoadLibrary(gnrProgramDataPath + cHunspellDLLFileName);
-
-  FullFileName := gnrProgramDataPath + cDictPath + ADictFileName;
-  Hunspell.LoadDictionary(FullFileName, ChangeFileExt(FullFileName, '.aff'));
-
-  AddCustomWords(Hunspell);
-  FHunspellsList.Add(Hunspell);
-
-  SaveToFile;
-
-  Exit(True);
-end;
-
-procedure TDictionaries.AddCustomWords(AHunspell: THunspell);
-var
-  CustomWord: string;
-  CustomWords: TStringList;
-
-begin
-  Assert(Assigned(AHunspell), 'TDictionaries.AddCustomWords: AHunspell = nil');
-
-  //TODO оптимизивроавть
-
-  CustomWords := TStringList.Create;
-  try
-    FSpellChecker.GetCustomWordsList(CustomWords);
-    for CustomWord in CustomWords do
-      AHunspell.AddCustomWord(CustomWord);
-  finally
-    FreeAndNil(CustomWords);
-  end;
-end;
-
-constructor TDictionaries.Create(ASpellChecker: TSpellChecker);
-begin
-  FHunspellsList := THunspellsList.Create(True);
-
-  FSpellChecker := ASpellChecker;
-end;
-
-procedure TDictionaries.Delete(const ADictFileName: string);
-var
-  Hunspell: THunspell;
-begin
-  for Hunspell in FHunspellsList do
-    if AnsiSameText(ExtractFileName(Hunspell.DictionaryFileName), ADictFileName) then
-      FHunspellsList.Delete(FHunspellsList.IndexOf(Hunspell));
-
-  SaveToFile;
-end;
-
-destructor TDictionaries.Destroy;
-begin
-  FreeAndNil(FHunspellsList);
-
-  inherited;
-end;
-
-procedure TDictionaries.LoadFromFile;
-var
-  StringList: TStringList;
-  Hunspell: THunspell;
-  DictFileName, FuulDictFileName: string;
-begin
-  FHunspellsList.Clear;
-
-  StringList := TStringList.Create;
-  try
-    if FileExists(gnrProgramUserDataPath + cDictListFileName) then
-      StringList.LoadFromFile(gnrProgramUserDataPath + cDictListFileName)
-    else
-      Exit;
-
-    for DictFileName in StringList do
-    begin
-      FuulDictFileName := gnrProgramDataPath + cDictPath + DictFileName;
-      if not FileExists(FuulDictFileName) then
-        Continue;
-
-      Hunspell := THunspell.Create;
-      Hunspell.TryLoadLibrary(gnrProgramDataPath + cHunspellDLLFileName);
-      Hunspell.LoadDictionary(FuulDictFileName, ChangeFileExt(FuulDictFileName, '.aff'));
-
-      AddCustomWords(Hunspell);
-      FHunspellsList.Add(Hunspell);
-    end;
-  finally
-    FreeAndNil(StringList);
-  end;
-end;
-
-procedure TDictionaries.SaveToFile;
-var
-  StringList: TStringList;
-  Hunspell: THunspell;
-begin
-  StringList := TStringList.Create;
-  try
-    for Hunspell in FHunspellsList do
-      StringList.Add(ExtractFileName(Hunspell.DictionaryFileName));
-
-    StringList.SaveToFile(gnrProgramUserDataPath + cDictListFileName);
-  finally
-    FreeAndNil(StringList);
-  end;
-end;
 
 end.

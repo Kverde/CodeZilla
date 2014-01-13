@@ -1,13 +1,13 @@
-unit uKoFormDictionaryEdit;
+unit uCzFormDictionaryEdit;
 
 interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, uKoSpellChecker;
+  Dialogs, ExtCtrls, StdCtrls, uCzSpellChecker;
 
 type
-  TKoFormDictionaryEdit = class(TForm)
+  TCzFormDictionaryEdit = class(TForm)
     LBDopWordsForDic: TListBox;
     PanelButtons: TPanel;
     bAdd: TButton;
@@ -46,18 +46,18 @@ uses
 
 { TFormDictionaryEdit }
 
-procedure TKoFormDictionaryEdit.bAddClick(Sender: TObject);
+procedure TCzFormDictionaryEdit.bAddClick(Sender: TObject);
 begin
   if not IsEmptyStr(eWord.Text) and FSpellChecker.AddCustomWord(eWord.Text) then
     LBDopWordsForDic.ItemIndex := LBDopWordsForDic.Items.Add(eWord.Text);
 end;
 
-procedure TKoFormDictionaryEdit.bCloseClick(Sender: TObject);
+procedure TCzFormDictionaryEdit.bCloseClick(Sender: TObject);
 begin
   Close;
 end;
 
-procedure TKoFormDictionaryEdit.bDeleteClick(Sender: TObject);
+procedure TCzFormDictionaryEdit.bDeleteClick(Sender: TObject);
 begin
   if LBDopWordsForDic.ItemIndex > -1 then
   begin
@@ -66,7 +66,7 @@ begin
   end;
 end;
 
-procedure TKoFormDictionaryEdit.bEditClick(Sender: TObject);
+procedure TCzFormDictionaryEdit.bEditClick(Sender: TObject);
 begin
   if LBDopWordsForDic.ItemIndex > -1 then
     if IsEmptyStr(eWord.Text) then
@@ -84,17 +84,17 @@ begin
     end;
 end;
 
-procedure TKoFormDictionaryEdit.bSelectDictClick(Sender: TObject);
+procedure TCzFormDictionaryEdit.bSelectDictClick(Sender: TObject);
 begin
   TCzFormSelectDictionaries.CreateAndShowModal;
 end;
 
-procedure TKoFormDictionaryEdit.bOptionsClick(Sender: TObject);
+procedure TCzFormDictionaryEdit.bOptionsClick(Sender: TObject);
 begin
   FSpellChecker.Options.ShowModal;
 end;
 
-procedure TKoFormDictionaryEdit.DeleteWord;
+procedure TCzFormDictionaryEdit.DeleteWord;
 var
   TemItemIndex: Integer;
 begin
@@ -108,22 +108,22 @@ begin
       LBDopWordsForDic.ItemIndex := TemItemIndex;
 end;
 
-procedure TKoFormDictionaryEdit.FormCreate(Sender: TObject);
+procedure TCzFormDictionaryEdit.FormCreate(Sender: TObject);
 begin
   FSpellChecker := TSpellChecker.Create;
 end;
 
-procedure TKoFormDictionaryEdit.FormDestroy(Sender: TObject);
+procedure TCzFormDictionaryEdit.FormDestroy(Sender: TObject);
 begin
   FreeAndNil(FSpellChecker);
 end;
 
-procedure TKoFormDictionaryEdit.FormShow(Sender: TObject);
+procedure TCzFormDictionaryEdit.FormShow(Sender: TObject);
 begin
   FSpellChecker.GetCustomWordsList(LBDopWordsForDic.Items);
 end;
 
-procedure TKoFormDictionaryEdit.LBDopWordsForDicClick(Sender: TObject);
+procedure TCzFormDictionaryEdit.LBDopWordsForDicClick(Sender: TObject);
 begin
   if LBDopWordsForDic.ItemIndex > -1 then
     eWord.Text := LBDopWordsForDic.Items[LBDopWordsForDic.ItemIndex];
