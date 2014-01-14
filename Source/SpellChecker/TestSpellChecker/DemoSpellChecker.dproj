@@ -53,9 +53,6 @@
         </DCCReference>
         <DCCReference Include="..\CCR.Hunspell_Cz.pas"/>
         <DCCReference Include="..\uCzSpellChecker.pas"/>
-        <DCCReference Include="..\uCzFormDictionaryEdit.pas">
-            <Form>CzFormDictionaryEdit</Form>
-        </DCCReference>
         <DCCReference Include="..\..\uCzRtti.pas"/>
         <DCCReference Include="..\..\uCzSettings.pas"/>
         <BuildConfiguration Include="Debug">

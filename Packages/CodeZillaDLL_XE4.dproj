@@ -87,7 +87,6 @@
         <VerInfo_Locale>1033</VerInfo_Locale>
         <DCC_UsePackage>vcl;designide</DCC_UsePackage>
         <Debugger_RunParams>-rTest</Debugger_RunParams>
-        <DCC_Namespace>vcl;$(DCC_Namespace)</DCC_Namespace>
         <DCC_RemoteDebug>false</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
@@ -100,10 +99,18 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="..\Source\uCzMain.pas"/>
-        <DCCReference Include="..\Source\uCzToolsAPI.pas"/>
         <DCCReference Include="..\Source\BaseDockForm.pas">
             <Form>BaseDockableForm</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\Source\CCR.Hunspell_Cz.pas"/>
+        <DCCReference Include="..\Source\uCzMain.pas"/>
+        <DCCReference Include="..\Source\uCzRtti.pas"/>
+        <DCCReference Include="..\Source\uCzSettings.pas"/>
+        <DCCReference Include="..\Source\uCzSpellChecker.pas"/>
+        <DCCReference Include="..\Source\uCzToolsAPI.pas"/>
+        <DCCReference Include="uCzComponentsSpellChecker.pas">
+            <Form>CzComponentsSpellChecker</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <BuildConfiguration Include="Release">

@@ -3,7 +3,7 @@
         <ProjectGuid>{C8FED2B1-5347-42F1-80CE-8E227985DA92}</ProjectGuid>
     </PropertyGroup>
     <ItemGroup>
-        <Projects Include="Packages\CodeZillaDLL_XE2.dproj">
+        <Projects Include="Packages\CodeZillaDLL_XE4.dproj">
             <Dependencies/>
         </Projects>
     </ItemGroup>
@@ -14,23 +14,23 @@
             <Default.Personality/>
         </BorlandProject>
     </ProjectExtensions>
-    <Target Name="CodeZillaDLL_XE2">
-        <MSBuild Projects="Packages\CodeZillaDLL_XE2.dproj"/>
+    <Target Name="CodeZillaDLL_XE4">
+        <MSBuild Projects="Packages\CodeZillaDLL_XE4.dproj"/>
     </Target>
-    <Target Name="CodeZillaDLL_XE2:Clean">
-        <MSBuild Projects="Packages\CodeZillaDLL_XE2.dproj" Targets="Clean"/>
+    <Target Name="CodeZillaDLL_XE4:Clean">
+        <MSBuild Projects="Packages\CodeZillaDLL_XE4.dproj" Targets="Clean"/>
     </Target>
-    <Target Name="CodeZillaDLL_XE2:Make">
-        <MSBuild Projects="Packages\CodeZillaDLL_XE2.dproj" Targets="Make"/>
+    <Target Name="CodeZillaDLL_XE4:Make">
+        <MSBuild Projects="Packages\CodeZillaDLL_XE4.dproj" Targets="Make"/>
     </Target>
     <Target Name="Build">
-        <CallTarget Targets="CodeZillaDLL_XE2"/>
+        <CallTarget Targets="CodeZillaDLL_XE4"/>
     </Target>
     <Target Name="Clean">
-        <CallTarget Targets="CodeZillaDLL_XE2:Clean"/>
+        <CallTarget Targets="CodeZillaDLL_XE4:Clean"/>
     </Target>
     <Target Name="Make">
-        <CallTarget Targets="CodeZillaDLL_XE2:Make"/>
+        <CallTarget Targets="CodeZillaDLL_XE4:Make"/>
     </Target>
     <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
 </Project>
