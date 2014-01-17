@@ -77,7 +77,7 @@
         <DCC_RemoteDebug>true</DCC_RemoteDebug>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-        <DCC_ExeOutput>..\OUT</DCC_ExeOutput>
+        <DCC_ExeOutput>..\Bin</DCC_ExeOutput>
         <DCC_DcpOutput>..\DCUs</DCC_DcpOutput>
         <UsePackages>true</UsePackages>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
@@ -109,8 +109,12 @@
         <DCCReference Include="..\Source\uCzSettings.pas"/>
         <DCCReference Include="..\Source\uCzSpellChecker.pas"/>
         <DCCReference Include="..\Source\uCzToolsAPI.pas"/>
-        <DCCReference Include="uCzComponentsSpellChecker.pas">
-            <Form>CzComponentsSpellChecker</Form>
+        <DCCReference Include="..\Source\uFormCzComponentsSpellChecker.pas">
+            <Form>FormCzComponentsSpellChecker</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\Source\uFormCzResult.pas">
+            <Form>FormCzResult</Form>
             <FormType>dfm</FormType>
         </DCCReference>
         <BuildConfiguration Include="Release">

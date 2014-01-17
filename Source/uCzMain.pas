@@ -3,14 +3,16 @@ unit uCzMain;
 interface
 
 uses
-  ToolsAPI, Classes, Forms, Dialogs, uCzToolsAPI, Menus, SysUtils;
+  ToolsAPI, Classes, Forms, Dialogs, uCzToolsAPI, Menus, SysUtils,
+  uFormCzComponentsSpellChecker;
 
 
 type
   TCodeZillaWizard = class(TNotifierObject, IOTAWizard)
   strict private
     FMainComponent: TComponent;
-
+    FSettingsPath : string;
+    FExpertPath   : string;
   public
     constructor Create;
     destructor Destroy; override;
@@ -31,6 +33,9 @@ function InitWizard(const BorlandIDEServices : IBorlandIDEServices;
 procedure DoneWizard;
 
 implementation
+
+const
+  cExpertFolderName = 'CodeZilla';
 
 procedure DoneWizard;
 begin
@@ -76,6 +81,11 @@ begin
     MenuItem.OnClick := SpellCheckerMenuClick;
     MainMenuItem.Add(MenuItem);
   end;
+
+  FSettingsPath := GetEnvironmentVariable('APPDATA') + PathDelim
+                    + cExpertFolderName + PathDelim;
+
+  FExpertPath := ExtractFilePath(GetModuleName(HInstance));
 end;
 
 destructor TCodeZillaWizard.Destroy;
@@ -107,7 +117,7 @@ end;
 
 procedure TCodeZillaWizard.SpellCheckerMenuClick(Sender: TObject);
 begin
-
+  TFormCzComponentsSpellChecker.CreateAndShow(FMainComponent, FExpertPath, FSettingsPath);
 end;
 
 end.

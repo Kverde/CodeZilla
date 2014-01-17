@@ -21,6 +21,8 @@ const
 
   cHunspellDLLFileName = 'hunspell.dll';
 
+  cDefaultDictionary = 'ru_RU_2013.dic';
+
 type
   TMisspell = class
   strict private
@@ -61,8 +63,10 @@ type
   TSpellChecker = class(TObject)
   strict private
     FDictPath     : string;
-    FSettingsPath : string;
     FExpertPath   : string;
+
+    FSettingFileName : string;
+
 
     FHunspell : THunspell;
     FSettings : TSpellCheckerSettings;
@@ -82,6 +86,8 @@ type
     function NextWord(const AStr: string; var APos: Integer; out AWord: string): Boolean;
     procedure CheckWord(const AWord: string);
 
+    function GetDictionaryName: string;
+
   public
     constructor Create(const AExpertPath, ASettingsPath: string);
     destructor Destroy; override;
@@ -96,6 +102,7 @@ type
     function SpellString(const AStr: string): Boolean;
 
     property MisspellList: TMisspellList read FMisspellList;
+    property DictionaryName: string read GetDictionaryName;
   end;
 
 
@@ -137,7 +144,7 @@ begin
     if Length(FSettings.DictionaryFileName) = 0 then
       OpenDialog.InitialDir := FDictPath
     else
-      OpenDialog.InitialDir := FSettings.DictionaryFileName;
+      OpenDialog.InitialDir := ExtractFileDir(FSettings.DictionaryFileName);
 
     OpenDialog.Filter := 'Hunspell dictionary (*.dic)|*.dic';
 
@@ -183,13 +190,18 @@ begin
   inherited;
 end;
 
+function TSpellChecker.GetDictionaryName: string;
+begin
+  Result := ExtractFileName(FSettings.DictionaryFileName);
+end;
+
 constructor TSpellChecker.Create(const AExpertPath, ASettingsPath: string);
 begin
   FExpertPath   := AExpertPath;
   FDictPath     := AExpertPath + cDictFolder;
-  FSettingsPath := ASettingsPath;
+  FSettingFileName := ASettingsPath + cSettingsFileName;
 
-  FSettings       := TSpellCheckerSettings.Create(FSettingsPath + cSettingsFileName);
+  FSettings       := TSpellCheckerSettings.Create(FSettingFileName);
   FMisspellList   := TMisspellList.Create(True);
   FCustomWordList := TStringList.Create;
 
@@ -197,6 +209,10 @@ begin
   FHunspell.TryLoadLibrary(FExpertPath + cHunspellDLLFileName);
 
   LoadCustomWords;
+
+  if Length(FSettings.DictionaryFileName) = 0 then
+    FSettings.DictionaryFileName := FDictPath + cDefaultDictionary;
+
   LoadDictionary(FSettings.DictionaryFileName);
 end;
 
@@ -211,13 +227,13 @@ end;
 procedure TSpellChecker.LoadCustomWords;
 begin
   FCustomWordList.Clear;
-  if FileExists(FSettingsPath + cCustomWordsFileName) then
-    FCustomWordList.LoadFromFile(FSettingsPath + cCustomWordsFileName);
+  if FileExists(FSettingFileName) then
+    FCustomWordList.LoadFromFile(FSettingFileName);
 end;
 
 procedure TSpellChecker.LoadDictionary(const ADictionaryFileName: string);
 begin
-  if not FileExists(FSettings.DictionaryFileName) then
+  if not FileExists(ADictionaryFileName) then
   begin
     ShowMessage(Format('Dictionary %s not found', [FSettings.DictionaryFileName]));
     Exit;
@@ -227,6 +243,8 @@ begin
                            ChangeFileExt(ADictionaryFileName, '.aff'));
 
   FSettings.DictionaryFileName := ADictionaryFileName;
+
+  AddCusctomWordsInHunspell;
 end;
 
 function TSpellChecker.NextWord(const AStr: string; var APos: Integer; out AWord: string): Boolean;
@@ -270,12 +288,12 @@ end;
 
 procedure TSpellChecker.SaveCustomWords;
 begin
-  FCustomWordList.SaveToFile(FSettingsPath + cCustomWordsFileName);
+  FCustomWordList.SaveToFile(FSettingFileName);
 end;
 
 procedure TSpellChecker.ShowCustomWordFile;
 begin
-  ShellExecute(0, 'open', PChar(FSettings.DictionaryFileName), '', '', 0);
+  ShellExecute(0, 'open', PChar(FSettingFileName), '', '', 0);
 end;
 
 function TSpellChecker.SpellString(const AStr: string): Boolean;

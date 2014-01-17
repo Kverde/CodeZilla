@@ -5,5 +5,4 @@
 *.identcache
 
 DCUs
-
-OUT
+Bin\CodeZillaDLL_XE4.dll
