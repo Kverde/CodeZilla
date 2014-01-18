@@ -92,7 +92,7 @@ type
     constructor Create(const AExpertPath, ASettingsPath: string);
     destructor Destroy; override;
 
-    function AddCustomWord(const ACustomWord: string): Boolean;
+    function AddCustomWord(const ANewCustomWord: string): Boolean;
     procedure DeleteCustomWord(const ACustomWord: string);
 
     procedure ChoiceDictionary;
@@ -108,16 +108,16 @@ type
 
 implementation
 
-function TSpellChecker.AddCustomWord(const ACustomWord: string): Boolean;
+function TSpellChecker.AddCustomWord(const ANewCustomWord: string): Boolean;
 begin
-  Result := ACustomWord.IndexOf(ACustomWord) > -1;
+  Result := FCustomWordList.IndexOf(ANewCustomWord) > -1;
 
   // Если такое слово уже есть то выходим
   if not Result then
     Exit;
 
-  FCustomWordList.Add(ACustomWord);
-  FHunspell.AddCustomWord(ACustomWord);
+  FCustomWordList.Add(ANewCustomWord);
+  FHunspell.AddCustomWord(ANewCustomWord);
   SaveCustomWords;
 
   Result := True;

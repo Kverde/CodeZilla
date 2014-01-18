@@ -55,8 +55,11 @@
 			<DCCReference Include="..\Source\uCzSettings.pas"/>
 			<DCCReference Include="..\Source\uCzSpellChecker.pas"/>
 			<DCCReference Include="..\Source\uCzToolsAPI.pas"/>
-			<DCCReference Include="..\Source\uCzComponentsSpellChecker.pas">
-				<Form>CzComponentsSpellChecker</Form>
+			<DCCReference Include="..\Source\uFormCzComponentsSpellChecker.pas">
+				<Form>FormCzComponentsSpellChecker</Form>
+			</DCCReference>
+			<DCCReference Include="..\Source\uFormCzResult.pas">
+				<Form>FormCzResult</Form>
 			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>

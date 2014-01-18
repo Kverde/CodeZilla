@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Classes, Rtti, TypInfo, SysUtils, Forms, Generics.Collections,
-  uGnRtti, uGnGeneral;
+  uCzRtti;
 
 const
   cDefaultSectionName = 'Settings';
@@ -116,7 +116,7 @@ begin
       IniValue := Prop.GetAttribute<TCzIniAttribute>;
       if Assigned(IniValue) then
       begin
-        if IsEmptyStr(IniValue.Name) then
+        if Length(IniValue.Name) = 0 then
           IniValue.Name := Prop.Name;
 
         Data := IniFile.ReadString(IniValue.Section, IniValue.Name, IniValue.DefaultValue);
@@ -151,7 +151,7 @@ begin
       IniValue := Prop.GetAttribute<TCzIniAttribute>;
       if Assigned(IniValue) then
       begin
-        if IsEmptyStr(IniValue.Name) then
+        if Length(IniValue.Name) = 0 then
           IniValue.Name := Prop.Name;
 
         Value := Prop.GetValue(Self);

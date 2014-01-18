@@ -85,6 +85,9 @@ begin
   FSettingsPath := GetEnvironmentVariable('APPDATA') + PathDelim
                     + cExpertFolderName + PathDelim;
 
+  if not ForceDirectories(FSettingsPath) then
+    ShowMessage(Format('Settings directory %s not create', [FSettingsPath]));
+
   FExpertPath := ExtractFilePath(GetModuleName(HInstance));
 end;
 

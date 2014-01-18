@@ -5,6 +5,7 @@ inherited FormCzResult: TFormCzResult
   Position = poScreenCenter
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object lbResult: TListBox
@@ -31,14 +32,30 @@ inherited FormCzResult: TFormCzResult
     Height = 41
     Align = alBottom
     TabOrder = 1
-    object bOK: TButton
-      Left = 634
+    object lbResultCount: TLabel
+      Left = 6
+      Top = 14
+      Width = 66
+      Height = 13
+      Caption = 'lbResultCount'
+    end
+    object bClose: TButton
+      Left = 638
       Top = 8
       Width = 89
       Height = 25
-      Caption = 'OK'
+      Caption = 'Close'
       TabOrder = 0
-      OnClick = bOKClick
+      OnClick = bCloseClick
+    end
+    object bOpenSpellChecker: TButton
+      Left = 482
+      Top = 8
+      Width = 138
+      Height = 25
+      Caption = 'Open spell checker'
+      TabOrder = 1
+      OnClick = bCloseClick
     end
   end
   object pmResult: TPopupMenu

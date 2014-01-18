@@ -3,7 +3,7 @@ unit uCzRtti;
 interface
 
 uses
-  Rtti, SysUtils, TypInfo, Variants, uGnStrConst;
+  Rtti, SysUtils, TypInfo, Variants;
 
 type
   ECzRtti = class(Exception);
@@ -108,7 +108,7 @@ begin
 //        TValue.Make(@i, Self.TypeInfo, Self);
 //      end;
   else
-    raise ECzRtti.CreateFmt(rsGnRtti_TypeNotSupported, [TCzRtti.GetEnumName(System.TypeInfo(TTypeKind), ATypeInfo.Kind)]);
+    raise ECzRtti.CreateFmt('Type %s not supported', [TCzRtti.GetEnumName(System.TypeInfo(TTypeKind), ATypeInfo.Kind)]);
   end;
 end;
 
@@ -140,7 +140,7 @@ begin
     // Возможно где-то размер множетсва урезается до одного байта.
 
   else
-    raise ECzRtti.CreateFmt(rsGnRtti_TypeNotSupported, [TCzRtti.GetEnumName(System.TypeInfo(TTypeKind), Self.Kind)]);
+    raise ECzRtti.CreateFmt('Type %s not supported', [TCzRtti.GetEnumName(System.TypeInfo(TTypeKind), Self.Kind)]);
   end;
 end;
 

@@ -3,9 +3,9 @@ unit uFormCzResult;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, BaseDockForm, Vcl.StdCtrls, Vcl.ExtCtrls,
-  Vcl.Menus, Generics.Collections, ToolsAPI, Types, uCzToolsAPI;
+  Windows, Messages, SysUtils, Variants, Classes, Graphics,
+  Controls, Forms, Dialogs, BaseDockForm, StdCtrls, ExtCtrls,
+  Menus, Generics.Collections, ToolsAPI, Types, uCzToolsAPI;
 
 type
   TResultRecord = record
@@ -21,21 +21,26 @@ type
   TFormCzResult = class(TBaseDockableForm)
     lbResult: TListBox;
     Panel1: TPanel;
-    bOK: TButton;
+    bClose: TButton;
     pmResult: TPopupMenu;
     miDeleteItem: TMenuItem;
     Addtodictionary1: TMenuItem;
     Addcomponenttypetoignorelist1: TMenuItem;
     Addpropertytoignorelist1: TMenuItem;
+    bOpenSpellChecker: TButton;
+    lbResultCount: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure lbResultDblClick(Sender: TObject);
-    procedure bOKClick(Sender: TObject);
+    procedure bCloseClick(Sender: TObject);
     procedure miDeleteItemClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     FResultList: TResultList;
   public
     procedure ClearResults;
+
+    procedure RefreshCount;
 
     procedure AddResult(APopValue, AMisspell,
                         AProject, APropertyName,
@@ -75,7 +80,7 @@ begin
     + ' - ' + AMisspell);
 end;
 
-procedure TFormCzResult.bOKClick(Sender: TObject);
+procedure TFormCzResult.bCloseClick(Sender: TObject);
 begin
   inherited;
   Close;
@@ -99,6 +104,13 @@ begin
   inherited;
 
   FreeAndNil(FResultList);
+end;
+
+procedure TFormCzResult.FormShow(Sender: TObject);
+begin
+  inherited;
+
+  RefreshCount;
 end;
 
 procedure TFormCzResult.lbResultDblClick(Sender: TObject);
@@ -143,7 +155,14 @@ begin
   begin
     FResultList.Delete(lbResult.ItemIndex);
     lbResult.Items.Delete(lbResult.ItemIndex);
+
+    RefreshCount;
   end;
+end;
+
+procedure TFormCzResult.RefreshCount;
+begin
+  lbResultCount.Caption := IntToStr(FResultList.Count);
 end;
 
 end.

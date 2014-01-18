@@ -135,16 +135,73 @@ object FormCzComponentsSpellChecker: TFormCzComponentsSpellChecker
       TabOrder = 2
     end
   end
-  object mFilters: TMemo
+  object mIgnoreList: TMemo
     Left = 0
     Top = 153
     Width = 552
     Height = 127
     Align = alClient
+    Font.Charset = RUSSIAN_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Tahoma'
+    Font.Style = []
     Lines.Strings = (
+      'TDataSet'
+      'TOraQuery'
+      'TOraSession'
       ''
-      '.Name')
+      '.KeyField'
+      '.ListField'
+      '.Name'
+      '')
+    ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 2
+  end
+  object alEdit: TActionList
+    Left = 470
+    Top = 187
+    object EditCut1: TEditCut
+      Category = 'Edit'
+      Caption = 'Cu&t'
+      Hint = 'Cut|Cuts the selection and puts it on the Clipboard'
+      ImageIndex = 0
+      ShortCut = 16472
+    end
+    object EditCopy1: TEditCopy
+      Category = 'Edit'
+      Caption = '&Copy'
+      Hint = 'Copy|Copies the selection and puts it on the Clipboard'
+      ImageIndex = 1
+      ShortCut = 16451
+    end
+    object EditPaste1: TEditPaste
+      Category = 'Edit'
+      Caption = '&Paste'
+      Hint = 'Paste|Inserts Clipboard contents'
+      ImageIndex = 2
+      ShortCut = 16470
+    end
+    object EditSelectAll1: TEditSelectAll
+      Category = 'Edit'
+      Caption = 'Select &All'
+      Hint = 'Select All|Selects the entire document'
+      ShortCut = 16449
+    end
+    object EditUndo1: TEditUndo
+      Category = 'Edit'
+      Caption = '&Undo'
+      Hint = 'Undo|Reverts the last action'
+      ImageIndex = 3
+      ShortCut = 16474
+    end
+    object EditDelete1: TEditDelete
+      Category = 'Edit'
+      Caption = '&Delete'
+      Hint = 'Delete|Erases the selection'
+      ImageIndex = 5
+      ShortCut = 46
+    end
   end
 end

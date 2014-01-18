@@ -3,9 +3,10 @@ unit uFormCzComponentsSpellChecker;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ImgList, Vcl.StdCtrls, Vcl.ExtCtrls,
-  uCzSpellChecker, ToolsAPI, uCzToolsAPI, uFormCzResult, Generics.Collections;
+  Windows, Messages, SysUtils, Variants, Classes, Graphics,
+  Controls, Forms, Dialogs, ImgList, StdCtrls, ExtCtrls,
+  uCzSpellChecker, ToolsAPI, uCzToolsAPI, uFormCzResult, Generics.Collections,
+  StdActns, ActnList;
 
 type
   TIgnoreList = TList<string>;
@@ -16,7 +17,7 @@ type
     rgKindFind: TRadioGroup;
     bDictionary: TButton;
     Panel1: TPanel;
-    mFilters: TMemo;
+    mIgnoreList: TMemo;
     bOk: TButton;
     bCancel: TButton;
     bHelp: TButton;
@@ -24,6 +25,13 @@ type
     bSelectDictionary: TButton;
     Label1: TLabel;
     lbCurrentDictionary: TLinkLabel;
+    alEdit: TActionList;
+    EditCut1: TEditCut;
+    EditCopy1: TEditCopy;
+    EditPaste1: TEditPaste;
+    EditSelectAll1: TEditSelectAll;
+    EditUndo1: TEditUndo;
+    EditDelete1: TEditDelete;
     procedure FormDestroy(Sender: TObject);
     procedure bSelectDictionaryClick(Sender: TObject);
     procedure bDictionaryClick(Sender: TObject);
@@ -31,7 +39,7 @@ type
     procedure bCancelClick(Sender: TObject);
     procedure bOkClick(Sender: TObject);
   private
-    FSettingsPath: string;
+    FIgnoreListFileName: string;
     FSpellChecker: TSpellChecker;
 
     FFormResult: TFormCzResult;
@@ -64,12 +72,13 @@ type
 
 implementation
 
-uses
-  System.TypInfo;
-
-
-
 {$R *.dfm}
+
+uses
+  TypInfo;
+
+const
+  cIgnoreListFileName = 'IgnoreList.txt';
 
 var
   Form: TFormCzComponentsSpellChecker = nil;
@@ -120,7 +129,7 @@ constructor TFormCzComponentsSpellChecker.Create(AOwner: TComponent;
 begin
   inherited Create(AOwner);
 
-  FSettingsPath := ASettingsPath;
+  FIgnoreListFileName := ASettingsPath + cIgnoreListFileName;
 
   FFormResult := TFormCzResult.Create(Self);
 
@@ -130,6 +139,8 @@ begin
 
   FSpellChecker := TSpellChecker.Create(AExpertPath, ASettingsPath);
 
+  if FileExists(FIgnoreListFileName) then
+    mIgnoreList.Lines.LoadFromFile(FIgnoreListFileName);
 
   SetDictionaryName(FSpellChecker.DictionaryName);
 end;
@@ -163,6 +174,9 @@ begin
 
   for i := 0 to ModuleServices.ModuleCount - 1 do
     begin
+      ShowMessage(ModuleServices.Modules[i].FileName + ' ' + ModuleServices.Modules[i].FileSystem + ' '
+      + IntToStr(ModuleServices.Modules[i].OwnerModuleCount) + ' ' + IntToStr(ModuleServices.Modules[i].OwnerCount));
+
       SpellCheckModule(ModuleServices.Modules[i]);
 
   //    frmSplash.PBSearch.Position := frmSplash.PBSearch.Position + 1;
@@ -218,6 +232,8 @@ end;
 
 procedure TFormCzComponentsSpellChecker.FormDestroy(Sender: TObject);
 begin
+  mIgnoreList.Lines.SaveToFile(FIgnoreListFileName);
+
   FreeAndNil(FSpellChecker);
 
   FreeAndNil(FIgnoreComponent);
@@ -249,6 +265,12 @@ var
   begin
     AComponent.GetPropValueByName('name', CompName);
 
+    if Length(CompName) = 0 then
+      Exit;
+
+    Caption := CompName;
+    Application.ProcessMessages;
+
     if True {not FormIgnore.InIgnoreList(CompName, '')} then
       for i := 0 to AComponent.GetPropCount - 1 do
       begin
@@ -268,7 +290,10 @@ var
             then
             begin
               AComponent.GetPropValue(i, StringsComponent);
-              PropValue := TStrings(StringsComponent.GetComponentHandle).Text;
+              if Assigned(StringsComponent) and AnsiSameText(StringsComponent.GetComponentType, 'TStrings') then
+                PropValue := TStrings(StringsComponent.GetComponentHandle).Text
+              else
+                Continue;
             end
             else
               Continue;
@@ -344,7 +369,7 @@ begin
   FIgnoreProperty.Clear;
   FIgnoreComponent.Clear;
 
-  for Line in mFilters.Lines do
+  for Line in mIgnoreList.Lines do
   begin
     Str := Trim(Line);
     if Length(Str) <> 0 then
