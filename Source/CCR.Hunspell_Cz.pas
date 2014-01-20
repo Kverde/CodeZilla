@@ -19,6 +19,9 @@
 {**************************************************************************************}
 
 unit CCR.Hunspell_Cz;
+
+{$WARNINGS OFF}
+
 {
   Notes
   - To be found, the Hunspell DLL needs to be called hunspell.dll or libhunspell.dll. If

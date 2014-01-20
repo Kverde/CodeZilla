@@ -9,6 +9,8 @@ uses
   Dialogs,
   Character,
   ShellAPI,
+  Windows,
+  IniFiles,
 
   uCzSettings,
   CCR.Hunspell_Cz;
@@ -71,7 +73,7 @@ type
     FHunspell : THunspell;
     FSettings : TSpellCheckerSettings;
 
-    FCustomWordList : TStringList;   // TODO hash
+    FCustomWordList : THashedStringList;
     FMisspellList   : TMisspellList;
 
     FStartWord, FLengthWord: Integer;
@@ -104,7 +106,6 @@ type
     property MisspellList: TMisspellList read FMisspellList;
     property DictionaryName: string read GetDictionaryName;
   end;
-
 
 implementation
 
@@ -180,6 +181,8 @@ end;
 
 destructor TSpellChecker.Destroy;
 begin
+  FSettings.Save;
+
   FreeAndNil(FMisspellList);
   FreeAndNil(FCustomWordList);
 
@@ -203,7 +206,7 @@ begin
 
   FSettings       := TSpellCheckerSettings.Create(FSettingFileName);
   FMisspellList   := TMisspellList.Create(True);
-  FCustomWordList := TStringList.Create;
+  FCustomWordList := THashedStringList.Create;
 
   FHunspell := THunspell.Create;
   FHunspell.TryLoadLibrary(FExpertPath + cHunspellDLLFileName);
@@ -293,7 +296,7 @@ end;
 
 procedure TSpellChecker.ShowCustomWordFile;
 begin
-  ShellExecute(0, 'open', PChar(FSettingFileName), '', '', 0);
+  ShellExecute(0, 'open', PChar(FSettingFileName), '', '', SW_SHOWNORMAL);
 end;
 
 function TSpellChecker.SpellString(const AStr: string): Boolean;

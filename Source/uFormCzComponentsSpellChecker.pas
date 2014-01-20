@@ -6,10 +6,11 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, ImgList, StdCtrls, ExtCtrls,
   uCzSpellChecker, ToolsAPI, uCzToolsAPI, uFormCzResult, Generics.Collections,
-  StdActns, ActnList;
+  StdActns, ActnList, Actions, uCzGeneral;
 
 type
   TIgnoreList = TList<string>;
+  TIgnoreDict = TDictionary<string, string>;
 
 
   TFormCzComponentsSpellChecker = class(TForm)
@@ -46,6 +47,7 @@ type
 
     FIgnoreComponent: TIgnoreList;
     FIgnoreProperty: TIgnoreList;
+    FIgnoreCompProp: TIgnoreDict;
 
     procedure UpdateIgnore;
 
@@ -79,6 +81,7 @@ uses
 
 const
   cIgnoreListFileName = 'IgnoreList.txt';
+  cFormCaption = 'Components spell checker';
 
 var
   Form: TFormCzComponentsSpellChecker = nil;
@@ -98,15 +101,21 @@ end;
 
 procedure TFormCzComponentsSpellChecker.bOkClick(Sender: TObject);
 begin
-  UpdateIgnore;
+  Enabled := False;
+  try
+    UpdateIgnore;
 
-  FFormResult.ClearResults;
+    FFormResult.ClearResults;
 
-  case rgKindFind.ItemIndex of
-    0: FindInCurrentForm;
-    1: FindInOpenForms;
-    2: FindInCurrentProject;
-    3: FindInProjectGroup;
+    case rgKindFind.ItemIndex of
+      0: FindInCurrentForm;
+      1: FindInOpenForms;
+      2: FindInCurrentProject;
+      3: FindInProjectGroup;
+    end;
+  finally
+    Enabled := True;
+    Caption := cFormCaption;
   end;
 
   FFormResult.Show;
@@ -114,13 +123,25 @@ begin
 end;
 
 procedure TFormCzComponentsSpellChecker.bRefreshClick(Sender: TObject);
+var
+  Wait: IWait;
 begin
+
+  Wait := TWait.Create(Self);
+
+  Sleep(3000);
+
   FSpellChecker.RefreshCustomWord;
 end;
 
 procedure TFormCzComponentsSpellChecker.bSelectDictionaryClick(Sender: TObject);
+var
+  Wait: IWait;
 begin
   FSpellChecker.ChoiceDictionary;
+
+  Wait := TWait.Create(Self);
+
   SetDictionaryName(FSpellChecker.DictionaryName);
 end;
 
@@ -131,13 +152,14 @@ begin
 
   FIgnoreListFileName := ASettingsPath + cIgnoreListFileName;
 
-  FFormResult := TFormCzResult.Create(Self);
+  FSpellChecker := TSpellChecker.Create(AExpertPath, ASettingsPath);
+
+  FFormResult := TFormCzResult.Create(Self, FSpellChecker, mIgnoreList.Lines, Self);
 
   FIgnoreComponent := TIgnoreList.Create;
   FIgnoreProperty  := TIgnoreList.Create;
+  FIgnoreCompProp  := TIgnoreDict.Create;
 
-
-  FSpellChecker := TSpellChecker.Create(AExpertPath, ASettingsPath);
 
   if FileExists(FIgnoreListFileName) then
     mIgnoreList.Lines.LoadFromFile(FIgnoreListFileName);
@@ -168,9 +190,11 @@ end;
 
 procedure TFormCzComponentsSpellChecker.FindInOpenForms;
 var
-  i: Integer;
+  i, Max: Integer;
 begin
-//  frmSplash.PBSearch.Max := TKoOTAPI.ModServices.ModuleCount;
+  Max := ModuleServices.ModuleCount;
+  Caption := '0/' + IntToStr(Max);
+  Application.ProcessMessages;
 
   for i := 0 to ModuleServices.ModuleCount - 1 do
     begin
@@ -179,7 +203,8 @@ begin
 
       SpellCheckModule(ModuleServices.Modules[i]);
 
-  //    frmSplash.PBSearch.Position := frmSplash.PBSearch.Position + 1;
+      Caption := IntToStr(i + 1) + '/' + IntToStr(Max);
+      Application.ProcessMessages;
     end;
 end;
 
@@ -188,13 +213,13 @@ procedure TFormCzComponentsSpellChecker.FindInProject(AProject: IOTAProject);
   function PasFrmModule(pModule : IOTAModuleInfo) : Boolean;
   begin
     Result := (pModule.ModuleType = omtForm)
-       and (not Length(pModule.FileName) = 0)
-       and SameText(ExtractFileExt(pModule.FileName), '.pas')
+       and (Length(pModule.FileName) <> 0)
+       and AnsiSameText(ExtractFileExt(pModule.FileName), '.pas')
        and FileExists(pModule.FileName);
   end;
 
 var
-  I, k: Integer;
+  I, k, Count: Integer;
   Module: IOTAModule;
   OpenFlag: Boolean;
 begin
@@ -204,7 +229,10 @@ begin
     if PasFrmModule(AProject.GetModule(i)) then
       Inc(k);
 
-//  frmSplash.PBSearch.Max := k;
+  Caption := '0/' + IntToStr(k);
+  Application.ProcessMessages;
+
+  Count := 1;
 
   for i := 0 to AProject.GetModuleCount - 1 do
     if PasFrmModule(AProject.GetModule(i)) then
@@ -217,7 +245,8 @@ begin
         if not OpenFlag then
           Module.Close;
 
-      //  frmSplash.PBSearch.Position := frmSplash.PBSearch.Position + 1;
+        Caption := IntToStr(Count) + '/' + IntToStr(k);
+        Inc(Count);
       end;
 end;
 
@@ -268,63 +297,59 @@ var
     if Length(CompName) = 0 then
       Exit;
 
-    Caption := CompName;
-    Application.ProcessMessages;
 
-    if True {not FormIgnore.InIgnoreList(CompName, '')} then
-      for i := 0 to AComponent.GetPropCount - 1 do
-      begin
-        PropName := AComponent.GetPropName(i);
+    for i := 0 to AComponent.GetPropCount - 1 do
+    begin
+      if not (AComponent.GetPropType(i) in
+         [tkClass, tkString, tkLString, tkWString, tkUString])
+      then
+        Continue;
 
-        if FIgnoreComponent.Contains(AComponent.GetComponentType) then
-          Continue;
+      PropName := AComponent.GetPropName(i);
 
-        if FIgnoreProperty.Contains(PropName) then
-          Continue;
+      if FIgnoreComponent.Contains(AComponent.GetComponentType) then
+        Continue;
 
-        case AComponent.GetPropType(i) of
-          tkClass:
-          begin
-            if AnsiSameText(PropName, 'Lines')
-               or AnsiSameText(PropName, 'Items')
-            then
-            begin
-              AComponent.GetPropValue(i, StringsComponent);
-              if Assigned(StringsComponent) and AnsiSameText(StringsComponent.GetComponentType, 'TStrings') then
-                PropValue := TStrings(StringsComponent.GetComponentHandle).Text
-              else
-                Continue;
-            end
-            else
-              Continue;
-          end;
+      if FIgnoreProperty.Contains(PropName) then
+        Continue;
 
-          tkString, tkLString, tkWString, tkUString:
-          begin
-            PropValue := TCzToolsAPI.GetStringProperty(AComponent, i);
-
-            if AnsiLowerCase(PropName) = 'caption'  then
-              PropValue := StringReplace(PropValue, '&', '', [rfReplaceAll]);
-
-        //    if FSpellChecker.FindWordInCustomWordList(PropValue) then
-        //      Continue;
-          end;
-
-        else
-          Continue;
+      case AComponent.GetPropType(i) of
+        tkClass:
+        begin
+          AComponent.GetPropValue(i, StringsComponent);
+          if Assigned(StringsComponent) and AnsiSameText(StringsComponent.GetComponentType, 'TStrings') then
+            PropValue := TStrings(StringsComponent.GetComponentHandle).Text
+          else
+            Continue;
         end;
 
-        if FSpellChecker.SpellString(PropValue) then
+        tkString, tkLString, tkWString, tkUString:
         begin
-          for Misspell in FSpellChecker.MisspellList do
-          begin
-            FFormResult.AddResult(PropValue,
-                                  Copy(PropValue, Misspell.Pos, Misspell.Length),
-                                  ExtractFileName(TCzToolsAPI.GetProjectFromModule(FormEditor.Module).FileName),
-                                  PropName, CompName, AComponent.GetComponentType, ModuleInfo, Misspell.Suggestions);
-          end;
+          PropValue := TCzToolsAPI.GetStringProperty(AComponent, i);
+
+          if AnsiLowerCase(PropName) = 'caption'  then
+            PropValue := StringReplace(PropValue, '&', '', [rfReplaceAll]);
+
+      //    if FSpellChecker.FindWordInCustomWordList(PropValue) then
+      //      Continue;
+        end;
+
+      else
+        Continue;
+      end;
+
+      if FSpellChecker.SpellString(PropValue) then
+      begin
+        for Misspell in FSpellChecker.MisspellList do
+        begin
+          FFormResult.AddResult(PropValue,
+                                Copy(PropValue, Misspell.Pos, Misspell.Length),
+                                ExtractFileName(TCzToolsAPI.GetProjectFromModule(FormEditor.Module).FileName),
+                                PropName, CompName, AComponent.GetComponentType, ModuleInfo, Misspell.Suggestions);
         end;
       end;
+    end;
+
 
     for i := 0 to AComponent.GetComponentCount - 1 do
       SpellCheckComponent(AComponent.GetComponent(i));
@@ -383,7 +408,11 @@ begin
         end;
       end
       else
+      begin
         FIgnoreComponent.Add(Str);
+
+      //  FIgnoreCompProp.Add();
+      end;
     end;
   end;
 

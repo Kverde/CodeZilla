@@ -5,7 +5,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, BaseDockForm, StdCtrls, ExtCtrls,
-  Menus, Generics.Collections, ToolsAPI, Types, uCzToolsAPI;
+  Menus, Generics.Collections, ToolsAPI, Types, uCzToolsAPI,
+  uCzSpellChecker;
 
 type
   TResultRecord = record
@@ -35,9 +36,23 @@ type
     procedure bCloseClick(Sender: TObject);
     procedure miDeleteItemClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure Addtodictionary1Click(Sender: TObject);
+    procedure Addcomponenttypetoignorelist1Click(Sender: TObject);
+    procedure Addpropertytoignorelist1Click(Sender: TObject);
   private
     FResultList: TResultList;
+    FSpellChecker: TSpellChecker;
+    FIgnoreList: TStrings;
+    FFormSpellChecker: TForm;
+
+    procedure DeleteResult(const AIndex: Word);
+
   public
+    constructor Create(AOwner: TComponent;
+                       ASpellChecker: TSpellChecker;
+                       AIgnoreList: TStrings;
+                       AFormSpellChecker: TForm); reintroduce;
+
     procedure ClearResults;
 
     procedure RefreshCount;
@@ -47,6 +62,8 @@ type
                         AComponentName, AComponentType: string;
                         AModuleInfo: IOTAModuleInfo;
                         ASuggestions: TStringDynArray);
+
+
   end;
 
 var
@@ -57,6 +74,48 @@ implementation
 {$R *.dfm}
 
 { TFormCzResult }
+
+procedure TFormCzResult.Addcomponenttypetoignorelist1Click(Sender: TObject);
+var
+  CompType: string;
+  i: Integer;
+begin
+  if lbResult.ItemIndex < 0 then
+    Exit;
+
+  CompType := FResultList[lbResult.ItemIndex].ComponentType;
+
+  FIgnoreList.Add(CompType);
+
+  DeleteResult(lbResult.ItemIndex);
+
+  for i := FResultList.Count - 1 downto 0 do
+    if AnsiSameText(CompType, FResultList[i].ComponentType) then
+      DeleteResult(i);
+
+  RefreshCount;
+end;
+
+procedure TFormCzResult.Addpropertytoignorelist1Click(Sender: TObject);
+var
+  PropName: string;
+  i: Integer;
+begin
+  if lbResult.ItemIndex < 0 then
+    Exit;
+
+  PropName := FResultList[lbResult.ItemIndex].PropertyName;
+
+  FIgnoreList.Add(PropName);
+
+  DeleteResult(lbResult.ItemIndex);
+
+  for i := FResultList.Count - 1 downto 0 do
+    if AnsiSameText(PropName, FResultList[i].PropertyName) then
+      DeleteResult(i);
+
+  RefreshCount;
+end;
 
 procedure TFormCzResult.AddResult(APopValue, AMisspell, AProject, APropertyName,
   AComponentName, AComponentType: string; AModuleInfo: IOTAModuleInfo;
@@ -80,16 +139,60 @@ begin
     + ' - ' + AMisspell);
 end;
 
+procedure TFormCzResult.Addtodictionary1Click(Sender: TObject);
+var
+  DelWord: string;
+  i: Integer;
+begin
+  inherited;
+
+  if lbResult.ItemIndex < 0 then
+    Exit;
+
+  DelWord := FResultList[lbResult.ItemIndex].Misspell;
+
+  FSpellChecker.AddCustomWord(DelWord);
+
+  DeleteResult(lbResult.ItemIndex);
+
+  for i := FResultList.Count - 1 downto 0 do
+    if AnsiSameText(DelWord, FResultList[i].Misspell) then
+      DeleteResult(i);
+
+  RefreshCount;
+end;
+
+
 procedure TFormCzResult.bCloseClick(Sender: TObject);
 begin
   inherited;
+
   Close;
+  FFormSpellChecker.Show;
 end;
 
 procedure TFormCzResult.ClearResults;
 begin
   FResultList.Clear;
   lbResult.Clear;
+end;
+
+constructor TFormCzResult.Create(AOwner: TComponent;
+  ASpellChecker: TSpellChecker; AIgnoreList: TStrings;
+  AFormSpellChecker: TForm);
+begin
+  inherited Create(AOwner);
+
+  FSpellChecker := ASpellChecker;
+  FIgnoreList   := AIgnoreList;
+
+  FFormSpellChecker := AFormSpellChecker;
+end;
+
+procedure TFormCzResult.DeleteResult(const AIndex: Word);
+begin
+  FResultList.Delete(AIndex);
+  lbResult.Items.Delete(AIndex);
 end;
 
 procedure TFormCzResult.FormCreate(Sender: TObject);

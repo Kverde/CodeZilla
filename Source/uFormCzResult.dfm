@@ -67,12 +67,15 @@ inherited FormCzResult: TFormCzResult
     end
     object Addtodictionary1: TMenuItem
       Caption = 'Add to dictionary'
+      OnClick = Addtodictionary1Click
     end
     object Addcomponenttypetoignorelist1: TMenuItem
       Caption = 'Add component type to ignore list'
+      OnClick = Addcomponenttypetoignorelist1Click
     end
     object Addpropertytoignorelist1: TMenuItem
       Caption = 'Add property to ignore list'
+      OnClick = Addpropertytoignorelist1Click
     end
   end
 end

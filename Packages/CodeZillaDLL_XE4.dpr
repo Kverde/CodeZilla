@@ -22,7 +22,8 @@ uses
   uCzSpellChecker in '..\Source\uCzSpellChecker.pas',
   uCzToolsAPI in '..\Source\uCzToolsAPI.pas',
   uFormCzComponentsSpellChecker in '..\Source\uFormCzComponentsSpellChecker.pas' {FormCzComponentsSpellChecker},
-  uFormCzResult in '..\Source\uFormCzResult.pas' {FormCzResult};
+  uFormCzResult in '..\Source\uFormCzResult.pas' {FormCzResult},
+  uCzGeneral in '..\Source\uCzGeneral.pas';
 
 {$R *.res}
 
