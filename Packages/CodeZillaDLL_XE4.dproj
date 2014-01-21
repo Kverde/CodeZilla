@@ -118,6 +118,10 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="..\Source\uCzGeneral.pas"/>
+        <DCCReference Include="..\Source\uFormCzWait.pas">
+            <Form>FormWait</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>

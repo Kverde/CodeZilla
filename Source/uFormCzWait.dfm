@@ -2,7 +2,7 @@ object FormWait: TFormWait
   Left = 0
   Top = 0
   BorderStyle = bsNone
-  Caption = 'FormWait'
+  Caption = 'Form wait'
   ClientHeight = 217
   ClientWidth = 379
   Color = clWindow

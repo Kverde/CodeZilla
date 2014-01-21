@@ -23,7 +23,8 @@ uses
   uCzToolsAPI in '..\Source\uCzToolsAPI.pas',
   uFormCzComponentsSpellChecker in '..\Source\uFormCzComponentsSpellChecker.pas' {FormCzComponentsSpellChecker},
   uFormCzResult in '..\Source\uFormCzResult.pas' {FormCzResult},
-  uCzGeneral in '..\Source\uCzGeneral.pas';
+  uCzGeneral in '..\Source\uCzGeneral.pas',
+  uFormCzWait in '..\Source\uFormCzWait.pas' {FormWait};
 
 {$R *.res}
 

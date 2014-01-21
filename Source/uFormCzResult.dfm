@@ -36,9 +36,9 @@ inherited FormCzResult: TFormCzResult
     object lbResultCount: TLabel
       Left = 6
       Top = 14
-      Width = 66
+      Width = 70
       Height = 13
-      Caption = 'lbResultCount'
+      Caption = 'Records count'
     end
     object bClose: TButton
       Left = 638
