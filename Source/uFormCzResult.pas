@@ -26,10 +26,11 @@ type
     pmResult: TPopupMenu;
     miDeleteItem: TMenuItem;
     Addtodictionary1: TMenuItem;
-    Addcomponenttypetoignorelist1: TMenuItem;
-    Addpropertytoignorelist1: TMenuItem;
+    miIgnoreComponentType: TMenuItem;
+    miIgnoreProperty: TMenuItem;
     bOpenSpellChecker: TButton;
     lbResultCount: TLabel;
+    miIgnoreComponentName: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure lbResultDblClick(Sender: TObject);
@@ -37,8 +38,11 @@ type
     procedure miDeleteItemClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure Addtodictionary1Click(Sender: TObject);
-    procedure Addcomponenttypetoignorelist1Click(Sender: TObject);
-    procedure Addpropertytoignorelist1Click(Sender: TObject);
+    procedure miIgnoreComponentTypeClick(Sender: TObject);
+    procedure miIgnorePropertyClick(Sender: TObject);
+    procedure lbResultMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure miIgnoreComponentNameClick(Sender: TObject);
   private
     FResultList: TResultList;
     FSpellChecker: TSpellChecker;
@@ -75,7 +79,28 @@ implementation
 
 { TFormCzResult }
 
-procedure TFormCzResult.Addcomponenttypetoignorelist1Click(Sender: TObject);
+procedure TFormCzResult.miIgnoreComponentNameClick(Sender: TObject);
+var
+  Str: string;
+  i: Integer;
+begin
+  if lbResult.ItemIndex < 0 then
+    Exit;
+
+  Str := FResultList[lbResult.ItemIndex].ComponentName;
+
+  FIgnoreList.Add('#' + Str);
+
+  DeleteResult(lbResult.ItemIndex);
+
+  for i := FResultList.Count - 1 downto 0 do
+    if AnsiSameText(Str, FResultList[i].ComponentName) then
+      DeleteResult(i);
+
+  RefreshCount;
+end;
+
+procedure TFormCzResult.miIgnoreComponentTypeClick(Sender: TObject);
 var
   CompType: string;
   i: Integer;
@@ -96,7 +121,7 @@ begin
   RefreshCount;
 end;
 
-procedure TFormCzResult.Addpropertytoignorelist1Click(Sender: TObject);
+procedure TFormCzResult.miIgnorePropertyClick(Sender: TObject);
 var
   PropName: string;
   i: Integer;
@@ -106,7 +131,7 @@ begin
 
   PropName := FResultList[lbResult.ItemIndex].PropertyName;
 
-  FIgnoreList.Add(PropName);
+  FIgnoreList.Add('.' + PropName);
 
   DeleteResult(lbResult.ItemIndex);
 
@@ -248,6 +273,15 @@ begin
       end;
     end;
   end;
+end;
+
+procedure TFormCzResult.lbResultMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  inherited;
+
+  if (Button = mbRight) and (lbResult.Items.Count > 0) then
+    lbResult.ItemIndex := lbResult.ItemAtPos(Point(X, Y), True);
 end;
 
 procedure TFormCzResult.miDeleteItemClick(Sender: TObject);

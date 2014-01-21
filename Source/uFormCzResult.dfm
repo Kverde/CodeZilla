@@ -24,6 +24,7 @@ inherited FormCzResult: TFormCzResult
     PopupMenu = pmResult
     TabOrder = 0
     OnDblClick = lbResultDblClick
+    OnMouseDown = lbResultMouseDown
   end
   object Panel1: TPanel
     Left = 0
@@ -69,13 +70,17 @@ inherited FormCzResult: TFormCzResult
       Caption = 'Add to dictionary'
       OnClick = Addtodictionary1Click
     end
-    object Addcomponenttypetoignorelist1: TMenuItem
-      Caption = 'Add component type to ignore list'
-      OnClick = Addcomponenttypetoignorelist1Click
+    object miIgnoreComponentType: TMenuItem
+      Caption = 'Ignore component type'
+      OnClick = miIgnoreComponentTypeClick
     end
-    object Addpropertytoignorelist1: TMenuItem
-      Caption = 'Add property to ignore list'
-      OnClick = Addpropertytoignorelist1Click
+    object miIgnoreProperty: TMenuItem
+      Caption = 'Ignore property'
+      OnClick = miIgnorePropertyClick
+    end
+    object miIgnoreComponentName: TMenuItem
+      Caption = 'Ignore component name'
+      OnClick = miIgnoreComponentNameClick
     end
   end
 end

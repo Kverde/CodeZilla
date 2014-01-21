@@ -67,7 +67,8 @@ type
     FDictPath     : string;
     FExpertPath   : string;
 
-    FSettingFileName : string;
+    FSettingFileName,
+    FCustomWordsFileName: string;
 
 
     FHunspell : THunspell;
@@ -94,7 +95,7 @@ type
     constructor Create(const AExpertPath, ASettingsPath: string);
     destructor Destroy; override;
 
-    function AddCustomWord(const ANewCustomWord: string): Boolean;
+    procedure AddCustomWord(const ANewCustomWord: string);
     procedure DeleteCustomWord(const ACustomWord: string);
 
     procedure ChoiceDictionary;
@@ -109,19 +110,15 @@ type
 
 implementation
 
-function TSpellChecker.AddCustomWord(const ANewCustomWord: string): Boolean;
+procedure TSpellChecker.AddCustomWord(const ANewCustomWord: string);
 begin
-  Result := FCustomWordList.IndexOf(ANewCustomWord) > -1;
-
   // Если такое слово уже есть то выходим
-  if not Result then
+  if FCustomWordList.IndexOf(ANewCustomWord) > -1 then
     Exit;
 
   FCustomWordList.Add(ANewCustomWord);
   FHunspell.AddCustomWord(ANewCustomWord);
   SaveCustomWords;
-
-  Result := True;
 end;
 
 procedure TSpellChecker.CheckWord(const AWord: string);
@@ -202,7 +199,9 @@ constructor TSpellChecker.Create(const AExpertPath, ASettingsPath: string);
 begin
   FExpertPath   := AExpertPath;
   FDictPath     := AExpertPath + cDictFolder;
-  FSettingFileName := ASettingsPath + cSettingsFileName;
+
+  FSettingFileName     := ASettingsPath + cSettingsFileName;
+  FCustomWordsFileName := ASettingsPath + cCustomWordsFileName;
 
   FSettings       := TSpellCheckerSettings.Create(FSettingFileName);
   FMisspellList   := TMisspellList.Create(True);
@@ -230,8 +229,8 @@ end;
 procedure TSpellChecker.LoadCustomWords;
 begin
   FCustomWordList.Clear;
-  if FileExists(FSettingFileName) then
-    FCustomWordList.LoadFromFile(FSettingFileName);
+  if FileExists(FCustomWordsFileName) then
+    FCustomWordList.LoadFromFile(FCustomWordsFileName);
 end;
 
 procedure TSpellChecker.LoadDictionary(const ADictionaryFileName: string);
@@ -291,12 +290,12 @@ end;
 
 procedure TSpellChecker.SaveCustomWords;
 begin
-  FCustomWordList.SaveToFile(FSettingFileName);
+  FCustomWordList.SaveToFile(FCustomWordsFileName);
 end;
 
 procedure TSpellChecker.ShowCustomWordFile;
 begin
-  ShellExecute(0, 'open', PChar(FSettingFileName), '', '', SW_SHOWNORMAL);
+  ShellExecute(0, 'open', PChar(FCustomWordsFileName), '', '', SW_SHOWNORMAL);
 end;
 
 function TSpellChecker.SpellString(const AStr: string): Boolean;

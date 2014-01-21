@@ -61,6 +61,10 @@
 			<DCCReference Include="..\Source\uFormCzResult.pas">
 				<Form>FormCzResult</Form>
 			</DCCReference>
+			<DCCReference Include="..\Source\uCzGeneral.pas"/>
+			<DCCReference Include="..\Source\uFormCzWait.pas">
+				<Form>FormWait</Form>
+			</DCCReference>
 			<BuildConfiguration Include="Base">
 				<Key>Base</Key>
 			</BuildConfiguration>

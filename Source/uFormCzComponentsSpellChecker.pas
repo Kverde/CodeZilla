@@ -6,7 +6,7 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, ImgList, StdCtrls, ExtCtrls,
   uCzSpellChecker, ToolsAPI, uCzToolsAPI, uFormCzResult, Generics.Collections,
-  StdActns, ActnList, Actions, uCzGeneral;
+  StdActns, ActnList, uCzGeneral, uFormCzWait;
 
 type
   TIgnoreList = TList<string>;
@@ -45,8 +45,9 @@ type
 
     FFormResult: TFormCzResult;
 
-    FIgnoreComponent: TIgnoreList;
+    FIgnoreComponentType: TIgnoreList;
     FIgnoreProperty: TIgnoreList;
+    FIgnoreComponentName: TIgnoreList;
     FIgnoreCompProp: TIgnoreDict;
 
     procedure UpdateIgnore;
@@ -101,7 +102,6 @@ end;
 
 procedure TFormCzComponentsSpellChecker.bOkClick(Sender: TObject);
 begin
-  Enabled := False;
   try
     UpdateIgnore;
 
@@ -114,7 +114,6 @@ begin
       3: FindInProjectGroup;
     end;
   finally
-    Enabled := True;
     Caption := cFormCaption;
   end;
 
@@ -156,8 +155,11 @@ begin
 
   FFormResult := TFormCzResult.Create(Self, FSpellChecker, mIgnoreList.Lines, Self);
 
-  FIgnoreComponent := TIgnoreList.Create;
+  FIgnoreComponentType := TIgnoreList.Create;
+  FIgnoreComponentName := TIgnoreList.Create;
+
   FIgnoreProperty  := TIgnoreList.Create;
+
   FIgnoreCompProp  := TIgnoreDict.Create;
 
 
@@ -190,21 +192,16 @@ end;
 
 procedure TFormCzComponentsSpellChecker.FindInOpenForms;
 var
-  i, Max: Integer;
+  i: Integer;
+  Wait: IWaitForm;
 begin
-  Max := ModuleServices.ModuleCount;
-  Caption := '0/' + IntToStr(Max);
-  Application.ProcessMessages;
+  Wait := TWaitForm.Create(Self, ModuleServices.ModuleCount);
 
   for i := 0 to ModuleServices.ModuleCount - 1 do
     begin
-      ShowMessage(ModuleServices.Modules[i].FileName + ' ' + ModuleServices.Modules[i].FileSystem + ' '
-      + IntToStr(ModuleServices.Modules[i].OwnerModuleCount) + ' ' + IntToStr(ModuleServices.Modules[i].OwnerCount));
-
       SpellCheckModule(ModuleServices.Modules[i]);
 
-      Caption := IntToStr(i + 1) + '/' + IntToStr(Max);
-      Application.ProcessMessages;
+      Wait.IncProgress;
     end;
 end;
 
@@ -219,9 +216,11 @@ procedure TFormCzComponentsSpellChecker.FindInProject(AProject: IOTAProject);
   end;
 
 var
-  I, k, Count: Integer;
+  I, k: Integer;
   Module: IOTAModule;
   OpenFlag: Boolean;
+  Wait: IWaitForm;
+
 begin
   // узнаем сколько модулей
   k := 0;
@@ -229,10 +228,7 @@ begin
     if PasFrmModule(AProject.GetModule(i)) then
       Inc(k);
 
-  Caption := '0/' + IntToStr(k);
-  Application.ProcessMessages;
-
-  Count := 1;
+  Wait := TWaitForm.Create(Self, k);
 
   for i := 0 to AProject.GetModuleCount - 1 do
     if PasFrmModule(AProject.GetModule(i)) then
@@ -245,8 +241,7 @@ begin
         if not OpenFlag then
           Module.Close;
 
-        Caption := IntToStr(Count) + '/' + IntToStr(k);
-        Inc(Count);
+        Wait.IncProgress;
       end;
 end;
 
@@ -265,8 +260,11 @@ begin
 
   FreeAndNil(FSpellChecker);
 
-  FreeAndNil(FIgnoreComponent);
+
+  FreeAndNil(FIgnoreComponentName);
+  FreeAndNil(FIgnoreComponentType);
   FreeAndNil(FIgnoreProperty);
+  FreeAndNil(FIgnoreCompProp);
 end;
 
 procedure TFormCzComponentsSpellChecker.SetDictionaryName(
@@ -297,6 +295,8 @@ var
     if Length(CompName) = 0 then
       Exit;
 
+    if FIgnoreComponentName.Contains(CompName) then
+      Exit;
 
     for i := 0 to AComponent.GetPropCount - 1 do
     begin
@@ -307,7 +307,7 @@ var
 
       PropName := AComponent.GetPropName(i);
 
-      if FIgnoreComponent.Contains(AComponent.GetComponentType) then
+      if FIgnoreComponentType.Contains(AComponent.GetComponentType) then
         Continue;
 
       if FIgnoreProperty.Contains(PropName) then
@@ -392,7 +392,7 @@ var
   Line, Str: string;
 begin
   FIgnoreProperty.Clear;
-  FIgnoreComponent.Clear;
+  FIgnoreComponentType.Clear;
 
   for Line in mIgnoreList.Lines do
   begin
@@ -408,8 +408,20 @@ begin
         end;
       end
       else
+      if Str[1] = '#' then
       begin
-        FIgnoreComponent.Add(Str);
+        if Length(Str) > 1 then
+        begin
+          Delete(Str, 1, 1);
+          FIgnoreComponentName.Add(Trim(Str));
+        end;
+      end
+      else
+      begin
+      //  if  then
+
+
+        FIgnoreComponentType.Add(Str);
 
       //  FIgnoreCompProp.Add();
       end;
